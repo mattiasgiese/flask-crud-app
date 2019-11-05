@@ -10,11 +10,12 @@ def withDockerNetwork(Closure inner) {
 
 pipeline {
   agent none
+
   parameters {
     string(name: 'dbuser', defaultValue: 'bookstore', description: 'Database user')
     string(name: 'dbpass', defaultValue: 'bookstore', description: 'Database password')
     string(name: 'dbname', defaultValue: 'bookstore', description: 'Database name')
-    choice(name: 'dbtype', choices: ['mysql+pymysql', 'sqlite' ], defaultValue: 'mysql+pymysql', description: 'Database type')
+    choice(name: 'dbtype', choices: ['mysql+pymysql', 'sqlite' ], description: 'Database type')
     string(name: 'dbfile', defaultValue: 'bookstore.db', description: 'Database file if sqlite is used')
     booleanParam(name: 'create_db', defaultValue: true, description: 'Whether or not to create the DB')
   }
@@ -29,7 +30,7 @@ pipeline {
           def app = docker.build("frontend")
           def tester = docker.image("curlimages/curl")
 
-          if ( dbtype == 'sqlite') {
+          if ( dbtype == 'sqlite' ) {
             database_uri = "${dbtype}:///${env.WORKSPACE}/${dbfile}"
           }
           else {
@@ -38,22 +39,24 @@ pipeline {
 
           withDockerNetwork{ n ->
             database.withRun("""
-              --network ${n}
-              --name database
-              -e 'MYSQL_RANDOM_ROOT_PASSWORD=yes'
-              -e "MYSQL_DATABASE=${dbname}"
-              -e "MYSQL_USER=${dbuser}"
-              -e "MYSQL_PASSWORD=${dbpass}"
-              """) { c ->
+            --network ${n}
+            --name database
+            -e "MYSQL_RANDOM_ROOT_PASSWORD=yes"
+            -e "MYSQL_DATABASE=${dbname}"
+            -e "MYSQL_USER=${dbuser}"
+            -e "MYSQL_PASSWORD=${dbpass}"
+            """
+            ) { c ->
               app.withRun("""
-                --network ${n}
-                -e "DATABASE_URI=${database_uri}"
-              """)
+              --network ${n}
+              -e "DATABASE_URI=${database_uri}"
+              """
+              )
               tester.inside("""
-                --network ${n}
-              """) {
+              --network ${n}
+              """
+              ) {
                 sh 'curl http://app:5000'
-              }
               }
             }
           }
