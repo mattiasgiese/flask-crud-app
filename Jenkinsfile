@@ -27,7 +27,7 @@ pipeline {
       steps {
         script {
           def database = docker.image("mariadb:10")
-          def app = docker.build("frontend")
+          def frontend = docker.build("frontend")
           def tester = docker.image("curlimages/curl")
 
           if ( dbtype == 'sqlite' ) {
@@ -38,25 +38,11 @@ pipeline {
           }
 
           withDockerNetwork{ n ->
-            database.withRun("""
-            --network ${n}
-            --name database
-            -e "MYSQL_RANDOM_ROOT_PASSWORD=yes"
-            -e "MYSQL_DATABASE=${dbname}"
-            -e "MYSQL_USER=${dbuser}"
-            -e "MYSQL_PASSWORD=${dbpass}"
-            """
-            ) { c ->
-              app.withRun("""
-              --network ${n}
-              -e "DATABASE_URI=${database_uri}"
-              """
-              )
-              tester.inside("""
-              --network ${n}
-              """
-              ) {
-                sh 'curl http://app:5000'
+            database.withRun("--network ${n} --name database -e 'MYSQL_RANDOM_ROOT_PASSWORD=yes' -e 'MYSQL_DATABASE=${dbname}' -e 'MYSQL_USER=${dbuser}' -e 'MYSQL_PASSWORD=${dbpass}'")
+            { c ->
+              frontend.run("--name frontend --network ${n} -e 'DATABASE_URI=${database_uri}'")
+              tester.withRun("--network ${n}") {
+                sh 'curl http://frontend:5000'
               }
             }
           }
