@@ -22,7 +22,7 @@ pipeline {
 
   stages {
     stage("test") {
-      agent any
+      agent { label 'docker' }
 
       steps {
         script {
