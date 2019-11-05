@@ -1,4 +1,5 @@
 import os
+import sys
 
 from flask import Flask
 from flask import redirect
@@ -8,10 +9,24 @@ from flask import request
 from flask_sqlalchemy import SQLAlchemy
 
 project_dir = os.path.dirname(os.path.abspath(__file__))
-database_file = "sqlite:///{}".format(os.path.join(project_dir, "bookdatabase.db"))
+# mysql+pymysql://user:password@host/dbname
+if os.environ.get('DATABASE_URI'):
+    database_uri = os.environ['DATABASE_URI']
+elif os.environ.get('DATABASE_HOST'):
+    dbname = os.environ['DATABASE_NAME']
+    dbhost = os.environ.get('DATABASE_HOST')
+    dbtype = os.environ.get('DATABASE_TYPE')
+    dbuser = os.environ.get('DATABASE_USER')
+    dbpassword = os.environ('DATABASE_PASSWORD')
+    if 'mysql' in dbtype and (not dbuser or not dbpassword):
+        sys.exit(1)
+
+    database_uri = f"{dbtype}://{dbuser}:{dbpassword}@{dbhost}/{dbname}"
+else:
+    database_uri = "sqlite:///{}".format(os.path.join(project_dir, "bookdatabase.db"))
 
 app = Flask(__name__)
-app.config["SQLALCHEMY_DATABASE_URI"] = database_file
+app.config["SQLALCHEMY_DATABASE_URI"] = database_uri
 
 db = SQLAlchemy(app)
 
