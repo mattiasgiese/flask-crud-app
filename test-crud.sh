@@ -2,7 +2,7 @@
 
 set -xeo pipefail
 
-[[ -z "$URL" ]] && {
+[[ -z "$APPURL" ]] && {
   echo 'You need to set URL to the frontend URL'
   exit 1
 }
@@ -10,7 +10,7 @@ set -xeo pipefail
 set -u
 
 echo Test to see if standard header is returned
-curl "$URL" | grep -q 'BookWorm Incorporated'
+curl "$APPURL" | grep -q 'BookWorm Incorporated'
 
 echo Test creation of a book
 # do stuff

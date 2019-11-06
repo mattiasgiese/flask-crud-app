@@ -22,7 +22,9 @@ pipeline {
   }
 
   environment {
-       URL = 'http://frontend:5000'
+       // URL may not be used:
+       // you tried to assign a value to the class 'java.net.URL'
+       APPURL = 'http://frontend:5000'
   }
 
   stages {
