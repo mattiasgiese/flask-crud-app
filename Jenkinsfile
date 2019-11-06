@@ -17,7 +17,7 @@ pipeline {
     string(name: 'dbpass', defaultValue: 'bookstore', description: 'Database password')
     string(name: 'dbname', defaultValue: 'bookstore', description: 'Database name')
     choice(name: 'dbtype', choices: ['sqlite', 'mysql+pymysql'], description: 'Database type')
-    string(name: 'dbfile', defaultValue: 'test.db', description: 'Database file if sqlite is used')
+    string(name: 'dbfile', defaultValue: 'test/test.db', description: 'Database file if sqlite is used')
     booleanParam(name: 'create_db', defaultValue: true, description: 'Whether or not to create the DB')
   }
 
@@ -48,7 +48,7 @@ pipeline {
             { c ->
               frontend.withRun("--name frontend --network ${n} -e 'DATABASE_URI=${database_uri}'") {
                 tester.withRun("--network ${n}") {
-                  sh './test-crud.sh'
+                  sh './test/test-crud.sh'
                 }
               }
             }
