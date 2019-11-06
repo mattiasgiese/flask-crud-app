@@ -9,7 +9,8 @@ def withDockerNetwork(Closure inner) {
 }
 
 pipeline {
-  agent none
+
+  agent { label 'docker' }
 
   parameters {
     string(name: 'dbuser', defaultValue: 'bookstore', description: 'Database user')
@@ -22,7 +23,6 @@ pipeline {
 
   stages {
     stage("test") {
-      agent { label 'docker' }
 
       steps {
         script {
@@ -42,7 +42,7 @@ pipeline {
             { c ->
               frontend.run("--name frontend --network ${n} -e 'DATABASE_URI=${database_uri}'")
               tester.withRun("--network ${n}") {
-                sh 'curl http://frontend:5000'
+                sh 'test-crud.sh'
               }
             }
           }
