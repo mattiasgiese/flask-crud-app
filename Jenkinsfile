@@ -34,7 +34,9 @@ pipeline {
         script {
           def database = docker.image("mariadb:10")
           def frontend = docker.build("frontend")
-          def tester = docker.image("curlimages/curl")
+          // first arg is image name, second
+          // arg is dir with Dockerfile
+          def tester = docker.build("frontend-tester", "test")
 
           if ( dbtype == 'sqlite' ) {
             database_uri = "${dbtype}:///${env.WORKSPACE}/${dbfile}"
