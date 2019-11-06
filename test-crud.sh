@@ -1,11 +1,13 @@
 #!/bin/bash
 
-set -xeio pipefail
+set -xeo pipefail
 
 [[ -z "$URL" ]] && {
   echo 'You need to set URL to the frontend URL'
   exit 1
 }
+
+set -u
 
 echo Test to see if standard header is returned
 curl "$URL" | grep -q 'BookWorm Incorporated'

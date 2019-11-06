@@ -16,8 +16,8 @@ pipeline {
     string(name: 'dbuser', defaultValue: 'bookstore', description: 'Database user')
     string(name: 'dbpass', defaultValue: 'bookstore', description: 'Database password')
     string(name: 'dbname', defaultValue: 'bookstore', description: 'Database name')
-    choice(name: 'dbtype', choices: ['mysql+pymysql', 'sqlite' ], description: 'Database type')
-    string(name: 'dbfile', defaultValue: 'bookstore.db', description: 'Database file if sqlite is used')
+    choice(name: 'dbtype', choices: ['sqlite', 'mysql+pymysql'], description: 'Database type')
+    string(name: 'dbfile', defaultValue: 'test.db', description: 'Database file if sqlite is used')
     booleanParam(name: 'create_db', defaultValue: true, description: 'Whether or not to create the DB')
   }
 
@@ -40,9 +40,10 @@ pipeline {
           withDockerNetwork{ n ->
             database.withRun("--network ${n} --name database -e 'MYSQL_RANDOM_ROOT_PASSWORD=yes' -e 'MYSQL_DATABASE=${dbname}' -e 'MYSQL_USER=${dbuser}' -e 'MYSQL_PASSWORD=${dbpass}'")
             { c ->
-              frontend.run("--name frontend --network ${n} -e 'DATABASE_URI=${database_uri}'")
-              tester.withRun("--network ${n}") {
-                sh './test-crud.sh'
+              frontend.withRun("--name frontend --network ${n} -e 'DATABASE_URI=${database_uri}'") {
+                tester.withRun("--network ${n}") {
+                  sh './test-crud.sh'
+                }
               }
             }
           }
