@@ -42,7 +42,7 @@ pipeline {
             { c ->
               frontend.run("--name frontend --network ${n} -e 'DATABASE_URI=${database_uri}'")
               tester.withRun("--network ${n}") {
-                sh 'test-crud.sh'
+                sh './test-crud.sh'
               }
             }
           }
