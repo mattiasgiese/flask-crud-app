@@ -21,6 +21,10 @@ pipeline {
     booleanParam(name: 'create_db', defaultValue: true, description: 'Whether or not to create the DB')
   }
 
+  environment {
+       URL = 'http://frontend:5000'
+  }
+
   stages {
     stage("test") {
 
