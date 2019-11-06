@@ -1,4 +1,9 @@
 <html>
+  <head>
+    <title>
+      BookWorm Incorporated
+    </title>
+  </head>
   <body>
     <h1>Add book</h1>
     <form method="POST" action="/">
@@ -11,7 +16,7 @@
       {% for book in books %}
         <tr>
           <td>
-            {{book.title}} 
+            {{book.title}}
           </td>
           <td>
             <form method="POST" action="./update" style="display: inline">
