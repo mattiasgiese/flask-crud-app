@@ -41,7 +41,7 @@ pipeline {
           def tester = docker.build("frontend-tester", "test")
 
           if ( dbtype == 'sqlite' ) {
-            database_uri = "${dbtype}:///app/${dbfile}"
+            database_uri = "${dbtype}:///${dbfile}"
           }
           else {
             database_uri = "${dbtype}://${dbuser}:${dbpass}@database/${dbname}"
@@ -52,7 +52,7 @@ pipeline {
             { c ->
               frontend.withRun("--name frontend --network ${n} -e 'LISTEN_ADDRESS=0.0.0.0' -e 'DATABASE_URI=${database_uri}'") {
                 tester.inside("--network ${n}") {
-                  sh "bash -x ${env.WORKSPACE}/test/test-crud.sh"
+                  sh "bash test/test-crud.sh"
                 }
               }
             }
