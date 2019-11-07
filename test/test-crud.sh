@@ -16,7 +16,7 @@ echo Test creation of a book
 curl -F 'title=foobar' -s -o /dev/null -w "%{http_code}" "$APPURL" | grep -q 200
 
 echo Test update of a book
-curl -F 'oldtitle=foobar' -F 'newtitle="Narf Narf Narf"' "${APPURL}/update"
+curl -F 'oldtitle=foobar' -F 'newtitle="Narf Narf Narf"' -o /dev/null -w "%{http_code}" "${APPURL}/update"
 
 echo Test deletion of a book
-curl -F 'title="Narf Narf Narf"' "${APPURL}/delete" | grep -q 302
+curl -F 'title="Narf Narf Narf"' -o /dev/null -w "%{http_code}" "${APPURL}/delete" | grep -q 302
