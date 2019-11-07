@@ -18,7 +18,7 @@ elif os.environ.get('DATABASE_HOST'):
     dbtype = os.environ.get('DATABASE_TYPE')
     dbuser = os.environ.get('DATABASE_USER')
     dbpassword = os.environ('DATABASE_PASSWORD')
-    if 'mysql' in dbtype and (not dbuser or not dbpassword):
+    if 'mysql' in dbtype and (not dbname or not dbuser or not dbpassword):
         sys.exit(1)
 
     database_uri = f"{dbtype}://{dbuser}:{dbpassword}@{dbhost}/{dbname}"
@@ -29,6 +29,9 @@ app = Flask(__name__)
 app.config["SQLALCHEMY_DATABASE_URI"] = database_uri
 
 db = SQLAlchemy(app)
+
+listen_address = os.environ.get('LISTEN_ADDRESS', 'localhost')
+listen_port = os.environ.get('LISTEN_PORT', '5000')
 
 class Book(db.Model):
     title = db.Column(db.String(80), unique=True, nullable=False, primary_key=True)
@@ -73,4 +76,4 @@ def delete():
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(host=listen_address, port=listen_port, debug=True)
