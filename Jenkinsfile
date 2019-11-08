@@ -16,7 +16,7 @@ pipeline {
     string(name: 'dbuser', defaultValue: 'bookstore', description: 'Database user')
     string(name: 'dbpass', defaultValue: 'bookstore', description: 'Database password')
     string(name: 'dbname', defaultValue: 'bookstore', description: 'Database name')
-    choice(name: 'dbtype', choices: ['sqlite', 'mysql+pymysql'], description: 'Database type')
+    choice(name: 'dbtype', choices: ['sqlite', 'mysql+pymysql', 'postgres'], description: 'Database type')
     string(name: 'dbfile', defaultValue: 'test/test.db', description: 'Database file if sqlite is used')
     booleanParam(name: 'create_db', defaultValue: true, description: 'Whether or not to create the DB')
   }
@@ -36,6 +36,10 @@ pipeline {
           def database = docker.image("mariadb:10")
           def frontend = docker.build("frontend")
 
+          def docker_ots = [:]
+          docker_opts['mysql+pymysql'] = "-e 'MYSQL_RANDOM_ROOT_PASSWORD=yes' -e 'MYSQL_DATABASE=${dbname}' -e 'MYSQL_USER=${dbuser}' -e 'MYSQL_PASSWORD=${dbpass}'"
+          docker_opts['postgres'] = "-e 'POSTGRES_PASSWORD=${dbpass}' -e 'POSTGRES_USER=${dbuser}' -e 'POSTGRES_DB=${dbname}'"
+
           // first arg is image name
           // second arg is dir with Dockerfile
           def tester = docker.build("frontend-tester", "test")
@@ -48,7 +52,7 @@ pipeline {
           }
 
           withDockerNetwork{ n ->
-            database.withRun("--network ${n} --name database -e 'MYSQL_RANDOM_ROOT_PASSWORD=yes' -e 'MYSQL_DATABASE=${dbname}' -e 'MYSQL_USER=${dbuser}' -e 'MYSQL_PASSWORD=${dbpass}'")
+            database.withRun("--network ${n} --name database $docker_opts.${dbtype}")
             { c ->
               frontend.withRun("--name frontend --network ${n} -e 'LISTEN_ADDRESS=0.0.0.0' -e 'DATABASE_URI=${database_uri}'") {
                 // prepare database
