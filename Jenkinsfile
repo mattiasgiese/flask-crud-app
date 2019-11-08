@@ -33,12 +33,20 @@ pipeline {
 
       steps {
         script {
-          def database = docker.image("mariadb:10")
-          def frontend = docker.build("frontend")
 
-          def docker_ots = [:]
-          docker_opts['mysql+pymysql'] = "-e 'MYSQL_RANDOM_ROOT_PASSWORD=yes' -e 'MYSQL_DATABASE=${dbname}' -e 'MYSQL_USER=${dbuser}' -e 'MYSQL_PASSWORD=${dbpass}'"
-          docker_opts['postgres'] = "-e 'POSTGRES_PASSWORD=${dbpass}' -e 'POSTGRES_USER=${dbuser}' -e 'POSTGRES_DB=${dbname}'"
+          def db_image = [
+            "mysql+pymysql": "mariadb:10",
+            "postgres": "postgres:latest",
+          ]
+
+          def docker_opts = [
+            "mysql+pymysql": "-e 'MYSQL_RANDOM_ROOT_PASSWORD=yes' -e 'MYSQL_DATABASE=${dbname}' -e 'MYSQL_USER=${dbuser}' -e 'MYSQL_PASSWORD=${dbpass}'",
+            "postgres": "-e 'POSTGRES_PASSWORD=${dbpass}' -e 'POSTGRES_USER=${dbuser}' -e 'POSTGRES_DB=${dbname}'",
+          ]
+
+          def database = docker.image(db_image."$dbtype")
+          def frontend = docker.build("frontend")
+          db_opts = docker_opts."$dbtype"
 
           // first arg is image name
           // second arg is dir with Dockerfile
@@ -52,7 +60,7 @@ pipeline {
           }
 
           withDockerNetwork{ n ->
-            database.withRun("--network ${n} --name database $docker_opts.${dbtype}")
+            database.withRun("--network ${n} --name database ${db_opts}")
             { c ->
               frontend.withRun("--name frontend --network ${n} -e 'LISTEN_ADDRESS=0.0.0.0' -e 'DATABASE_URI=${database_uri}'") {
                 // prepare database
