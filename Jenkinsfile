@@ -51,6 +51,11 @@ pipeline {
             database.withRun("--network ${n} --name database -e 'MYSQL_RANDOM_ROOT_PASSWORD=yes' -e 'MYSQL_DATABASE=${dbname}' -e 'MYSQL_USER=${dbuser}' -e 'MYSQL_PASSWORD=${dbpass}'")
             { c ->
               frontend.withRun("--name frontend --network ${n} -e 'LISTEN_ADDRESS=0.0.0.0' -e 'DATABASE_URI=${database_uri}'") {
+                // prepare database
+                frontend.inside("--network ${n} -e 'LISTEN_ADDRESS=0.0.0.0' -e 'DATABASE_URI=${database_uri}'") {
+                  sh "python prepare_db.py"
+                }
+                // run all tests
                 tester.inside("--network ${n}") {
                   sh "bash test/test-crud.sh"
                 }
