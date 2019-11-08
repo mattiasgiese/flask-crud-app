@@ -53,6 +53,7 @@ pipeline {
               frontend.withRun("--name frontend --network ${n} -e 'LISTEN_ADDRESS=0.0.0.0' -e 'DATABASE_URI=${database_uri}'") {
                 // prepare database
                 frontend.inside("--network ${n} -e 'LISTEN_ADDRESS=0.0.0.0' -e 'DATABASE_URI=${database_uri}'") {
+                  sh 'test/wait-for-db.sh'
                   sh "python prepare_db.py"
                 }
                 // run all tests
