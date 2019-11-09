@@ -2,5 +2,4 @@ Flask
 SQLAlchemy
 PyMySQL
 flask-sqlalchemy
-
-
+psycopg2
